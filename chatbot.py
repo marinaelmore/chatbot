@@ -120,6 +120,8 @@ class Chatbot:
       # calling other functions. Although modular code is not graded, it is       #
       # highly recommended                                                        #
       #############################################################################
+      self.binarize()
+
       if self.is_turbo == True:
         response = 'processed %s in creative mode!!' % input
       else:
@@ -142,14 +144,18 @@ class Chatbot:
       # The values stored in each row i and column j is the rating for
       # movie i by user j
       self.titles, self.ratings = ratings()
+      print self.ratings
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
 
 
     def binarize(self):
       """Modifies the ratings matrix to make all of the ratings binary"""
-
-      pass
+      for x in np.nditer(self.ratings, op_flags=['readwrite']):
+        if x >= 3.5:
+          x[...] = 1
+        elif x > 0 and x < 3.5:
+          x[...] = -1
 
 
     def distance(self, u, v):
