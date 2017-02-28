@@ -24,6 +24,7 @@ def ratings(src_filename='data/ratings.txt', delimiter='%', header=False, quotin
 	reader = csv.reader(file(src_filename), delimiter=delimiter, quoting=quoting)
 	for line in reader:
 		mat[int(line[1])][int(line[0])] = float(line[2])
+        print mat
 	return title_list, mat
 
 def titles(src_filename='data/movies.txt', delimiter='%', header=False, quoting=csv.QUOTE_MINIMAL):

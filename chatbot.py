@@ -22,10 +22,10 @@ class Chatbot:
     # `moviebot` is the default chatbot. Change it to your chatbot's name       #
     #############################################################################
     def __init__(self, is_turbo=False):
-      self.name = 'moviebot'
-      self.is_turbo = is_turbo
-      self.read_data()
-
+        self.name = 'Oscar'
+        self.is_turbo = is_turbo
+        self.read_data()
+        self.getRatings = ratings() 
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -156,7 +156,6 @@ class Chatbot:
           x[...] = 1
         elif x > 0 and x < 3.5:
           x[...] = -1
-
 
     def distance(self, u, v):
       """Calculates a given distance function between vectors u and v"""
