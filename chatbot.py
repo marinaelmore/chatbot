@@ -25,6 +25,7 @@ class Chatbot:
     def __init__(self, is_turbo=False):
       self.name = 'moviebot'
       self.is_turbo = is_turbo
+      self.parsed_titles = []
       self.read_data()
 
     #############################################################################
@@ -140,11 +141,14 @@ class Chatbot:
 
     def binarize(self):
       """Modifies the ratings matrix to make all of the ratings binary"""
-      for x in np.nditer(self.ratings, op_flags=['readwrite']):
-        if x >= 3.5:
-          x[...] = 1
-        elif x > 0 and x < 3.5:
-          x[...] = -1
+      rows, cols = self.ratings.shape
+      for i in xrange(rows):
+        for j in xrange(cols):
+          k = self.ratings[i,j]
+          if k >= 3.5:
+            self.ratings[i,j] = 1
+          elif k > 0 and k < 3.5:
+            self.ratings[i,j] = -1
 
     def read_data(self):
       """Reads the ratings matrix from file"""
@@ -152,19 +156,13 @@ class Chatbot:
       # The values stored in each row i and column j is the rating for
       # movie i by user j
       self.titles, self.ratings = ratings()
-      title_regex = '(.+)(?:\s)(?:\(\d{4}\))'
-      self.titles2 = []
+      title_regex = '(.+)(?:\s)'
 
+      # Removes articles from titles, places into additional array
       for movie in self.titles:
-        try:
-          title = re.findall(title_regex, movie)[0].replace(", The", "").replace(", An", "").replace(", A", "")
-        except:
-          print movie
-          sys.exit()
+        title = re.findall(title_regex, movie[0])[0].replace(", The", "").replace(", An", "").replace(", A", "")
+        self.parsed_titles.append(title)
 
-        self.titles2.append(title)
-
-      print self.titles
       self.binarize()
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
