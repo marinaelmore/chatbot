@@ -26,6 +26,7 @@ class Chatbot:
         self.is_turbo = is_turbo
         self.read_data()
         self.getRatings = ratings() 
+        self.movie_sent = []
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -69,11 +70,17 @@ class Chatbot:
       in quotation marks. Other robust extensions of this can be written in as well
       like spell checking and finding movie titles that are not listed in quotation marks"""
 
-      quote_regex = '\"(.*)\"'
+      #quote_regex = '\"(.*)\"'
+      quote_regex = '\"[^"]+\"'
       movies = re.findall(quote_regex, input)
-      if movies != []:
-        return movies[0]
-      else: return "ERROR"
+      if movies:
+        return movies
+        #if len(movies) == 1:
+        #    return movies[0]
+        #else:
+        #    return ''
+      else: 
+        return ''
 
 
     def get_sentiment(self, input):
@@ -102,36 +109,50 @@ class Chatbot:
         if word.lower() in negative_words:
           count_neg += 1
 
-      if count_pos >= count_neg:
+      if count_pos > count_neg:
         print "pos"
         return 1
-      else: 
+      elif count_neg > count_pos:
         print "neg"
+        return -1
+      else: 
+        print "unsure"
         return 0
 
     def process(self, input):
-      """Takes the input string from the REPL and call delegated functions
-      that
-        1) extract the relevant information and
-        2) transform the information into a response to the user
-      """
-      #############################################################################
-      # TODO: Implement the extraction and transformation in this method, possibly#
-      # calling other functions. Although modular code is not graded, it is       #
-      # highly recommended                                                        #
-      #############################################################################
-      self.binarize()
+        """Takes the input string from the REPL and call delegated functions
+        that
+          1) extract the relevant information and
+          2) transform the information into a response to the user
+        """
+        #############################################################################
+        # TODO: Implement the extraction and transformation in this method, possibly#
+        # calling other functions. Although modular code is not graded, it is       #
+        # highly recommended                                                        #
+        #############################################################################
+        response = ''
+        if self.is_turbo == True:
+            response = 'processed %s in creative mode!!' % input
+        else:
+            movie_title = self.get_movie_title(input)
+            sentiment = self.get_sentiment(input)
+            print movie_title, sentiment
+            if len(movie_title) == 1:
+                if sentiment == 1:
+                    response = "Thanks! I\'m glad you liked \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    self.movie_sent.append((movie_title, sentiment))
+                elif sentiment == -1:
+                    response = "Uh Oh! I\'m sorry you didn\'t enjoy \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    self.movie_sent.append((movie_title, sentiment))
+                else:
+                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about %s." %(movie_title, movie_title)
+                    #repeat process and save the movie title
+            elif len(movie_title) > 1:
+                response = "You're confusing me! Please enter one movie at a time. Can you please tell me about one movie?"
+            else:
+                response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"La La Land\"."
 
-      if self.is_turbo == True:
-        response = 'processed %s in creative mode!!' % input
-      else:
-        movie_title = self.get_movie_title(input)
-        print movie_title 
-        sentiment = self.get_sentiment(input)
-
-        response = 'processed %s in regular mode!!' % input
-
-      return response
+        return response
 
 
     #############################################################################
@@ -144,7 +165,7 @@ class Chatbot:
       # The values stored in each row i and column j is the rating for
       # movie i by user j
       self.titles, self.ratings = ratings()
-      print self.ratings
+      #self.binarize()
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
 
