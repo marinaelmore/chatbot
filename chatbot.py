@@ -21,10 +21,10 @@ class Chatbot:
     # `moviebot` is the default chatbot. Change it to your chatbot's name       #
     #############################################################################
     def __init__(self, is_turbo=False):
-      self.name = 'moviebot'
-      self.is_turbo = is_turbo
-      self.read_data()
-
+        self.name = 'Oscar'
+        self.is_turbo = is_turbo
+        self.read_data()
+        self.getRatings = ratings() 
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -96,9 +96,8 @@ class Chatbot:
 
 
     def binarize(self):
-      """Modifies the ratings matrix to make all of the ratings binary"""
-
-      pass
+        """Modifies the ratings matrix to make all of the ratings binary"""
+        print self.ratings()
 
 
     def distance(self, u, v):
