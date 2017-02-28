@@ -81,10 +81,33 @@ class Chatbot:
       request. In the most basic case, the function will return 1 if the user is interested 
       in the movie and a 0 if they are not. Other extensions could return a scaled values
       to reflect the intensity of their love/hatred for the movie"""
+      positive_words = []
+      negative_words = []
+      regex = '(.*),(.*)'
+      with open("data/sentiment.txt", 'r') as f:
+        content = f.readlines()
+        for line in content:
+          word_sentiment = re.findall(regex, line)[0]
+          if word_sentiment[1] == 'pos':
+            positive_words.append(word_sentiment[0])
+          else:
+            negative_words.append(word_sentiment[0])
 
-      return 1
+      count_pos = 0
+      count_neg = 0
+      input_split = input.split()
+      for word in input_split:
+        if word.lower() in positive_words:
+          count_pos += 1
+        if word.lower() in negative_words:
+          count_neg += 1
 
-
+      if count_pos >= count_neg:
+        print "pos"
+        return 1
+      else: 
+        print "neg"
+        return 0
 
     def process(self, input):
       """Takes the input string from the REPL and call delegated functions
