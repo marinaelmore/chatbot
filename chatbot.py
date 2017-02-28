@@ -14,6 +14,7 @@ import numpy as np
 
 from movielens import ratings
 from random import randint
+from NaiveBayes import NaiveBayes
 
 class Chatbot:
     """Simple class to implement the chatbot for PA 6."""
@@ -27,6 +28,7 @@ class Chatbot:
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
+        self.classifier = NaiveBayes()
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -82,7 +84,6 @@ class Chatbot:
       else: 
         return ''
 
-
     def get_sentiment(self, input):
         """This function will take in the input and decide the sentiment of the user's
         request. In the most basic case, the function will return 1 if the user is interested 
@@ -103,21 +104,19 @@ class Chatbot:
         count_pos = 0
         count_neg = 0
         input_split = input.split()
-        for word in input_split:
-            if word.lower() in positive_words:
-                count_pos += 1
-            if word.lower() in negative_words:
-                count_neg += 1
+        classification = self.classifier.classifyFile('data/imdb1/', input_split)
+        
+        if classification == 'pos':
+          return 1
+        else:
+          return -1
 
-        if count_pos > count_neg:
-            print "pos"
-            return 1
-        elif count_neg > count_pos:
-            print "neg"
-            return -1
-        else: 
-            print "unsure"
-            return 0
+  # def classifyFile(trainDir, testFilePath):
+  # classifier = NaiveBayes()
+  # trainSplit = classifier.trainSplit(trainDir)
+  # classifier.train(trainSplit)
+  # testFile = classifier.readFile(testFilePath)
+  # print classifier.classify(testFile)
 
     def process(self, input):
         """Takes the input string from the REPL and call delegated functions
