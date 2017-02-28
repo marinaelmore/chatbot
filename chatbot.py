@@ -9,6 +9,7 @@
 import csv
 import math
 import re
+import sys
 
 import numpy as np
 
@@ -120,7 +121,6 @@ class Chatbot:
       # calling other functions. Although modular code is not graded, it is       #
       # highly recommended                                                        #
       #############################################################################
-      self.binarize()
 
       if self.is_turbo == True:
         response = 'processed %s in creative mode!!' % input
@@ -138,17 +138,6 @@ class Chatbot:
     # 3. Movie Recommendation helper functions                                  #
     #############################################################################
 
-    def read_data(self):
-      """Reads the ratings matrix from file"""
-      # This matrix has the following shape: num_movies x num_users
-      # The values stored in each row i and column j is the rating for
-      # movie i by user j
-      self.titles, self.ratings = ratings()
-      print self.ratings
-      reader = csv.reader(open('data/sentiment.txt', 'rb'))
-      self.sentiment = dict(reader)
-
-
     def binarize(self):
       """Modifies the ratings matrix to make all of the ratings binary"""
       for x in np.nditer(self.ratings, op_flags=['readwrite']):
@@ -156,6 +145,29 @@ class Chatbot:
           x[...] = 1
         elif x > 0 and x < 3.5:
           x[...] = -1
+
+    def read_data(self):
+      """Reads the ratings matrix from file"""
+      # This matrix has the following shape: num_movies x num_users
+      # The values stored in each row i and column j is the rating for
+      # movie i by user j
+      self.titles, self.ratings = ratings()
+      title_regex = '(.+)(?:\s)(?:\(\d{4}\))'
+      self.titles2 = []
+
+      for movie in self.titles:
+        try:
+          title = re.findall(title_regex, movie)[0].replace(", The", "").replace(", An", "").replace(", A", "")
+        except:
+          print movie
+          sys.exit()
+
+        self.titles2.append(title)
+
+      print self.titles
+      self.binarize()
+      reader = csv.reader(open('data/sentiment.txt', 'rb'))
+      self.sentiment = dict(reader)
 
 
     def distance(self, u, v):
