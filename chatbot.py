@@ -8,6 +8,7 @@
 ######################################################################
 import csv
 import math
+import re
 
 import numpy as np
 
@@ -62,6 +63,29 @@ class Chatbot:
     # 2. Modules 2 and 3: extraction and transformation                         #
     #############################################################################
 
+
+    def get_movie_title(self, input):
+      """This function will take in the input from the user and extract the movie title
+      in quotation marks. Other robust extensions of this can be written in as well
+      like spell checking and finding movie titles that are not listed in quotation marks"""
+
+      quote_regex = '\"(.*)\"'
+      movies = re.findall(quote_regex, input)
+      if movies != []:
+        return movies[0]
+      else: return "ERROR"
+
+
+    def get_sentiment(self, input):
+      """This function will take in the input and decide the sentiment of the user's
+      request. In the most basic case, the function will return 1 if the user is interested 
+      in the movie and a 0 if they are not. Other extensions could return a scaled values
+      to reflect the intensity of their love/hatred for the movie"""
+
+      return 1
+
+
+
     def process(self, input):
       """Takes the input string from the REPL and call delegated functions
       that
@@ -76,7 +100,11 @@ class Chatbot:
       if self.is_turbo == True:
         response = 'processed %s in creative mode!!' % input
       else:
-        response = 'processed %s in starter mode' % input
+        movie_title = self.get_movie_title(input)
+        print movie_title 
+        sentiment = self.get_sentiment(input)
+
+        response = 'processed %s in regular mode!!' % input
 
       return response
 
