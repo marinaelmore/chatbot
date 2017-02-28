@@ -151,16 +151,22 @@ class Chatbot:
 
     def binarize(self):
 <<<<<<< HEAD
+<<<<<<< HEAD
         """Modifies the ratings matrix to make all of the ratings binary"""
         print self.ratings()
 =======
+=======
+>>>>>>> de84032e9b3ca782e586d31608bdde936f54f873
       """Modifies the ratings matrix to make all of the ratings binary"""
       for x in np.nditer(self.ratings, op_flags=['readwrite']):
         if x >= 3.5:
           x[...] = 1
         elif x > 0 and x < 3.5:
           x[...] = -1
+<<<<<<< HEAD
 >>>>>>> 01bc2a998bc6ea006eaf6fd21d89f0b852272aa1
+=======
+>>>>>>> de84032e9b3ca782e586d31608bdde936f54f873
 
 
     def distance(self, u, v):
