@@ -84,40 +84,40 @@ class Chatbot:
 
 
     def get_sentiment(self, input):
-      """This function will take in the input and decide the sentiment of the user's
-      request. In the most basic case, the function will return 1 if the user is interested 
-      in the movie and a 0 if they are not. Other extensions could return a scaled values
-      to reflect the intensity of their love/hatred for the movie"""
-      positive_words = []
-      negative_words = []
-      regex = '(.*),(.*)'
-      with open("data/sentiment.txt", 'r') as f:
-        content = f.readlines()
-        for line in content:
-          word_sentiment = re.findall(regex, line)[0]
-          if word_sentiment[1] == 'pos':
-            positive_words.append(word_sentiment[0])
-          else:
-            negative_words.append(word_sentiment[0])
+        """This function will take in the input and decide the sentiment of the user's
+        request. In the most basic case, the function will return 1 if the user is interested 
+        in the movie and a 0 if they are not. Other extensions could return a scaled values
+        to reflect the intensity of their love/hatred for the movie"""
+        positive_words = []
+        negative_words = []
+        regex = '(.*),(.*)'
+        with open("data/sentiment.txt", 'r') as f:
+            content = f.readlines()
+            for line in content:
+                word_sentiment = re.findall(regex, line)[0]
+                if word_sentiment[1] == 'pos':
+                    positive_words.append(word_sentiment[0])
+                else:
+                    negative_words.append(word_sentiment[0])
 
-      count_pos = 0
-      count_neg = 0
-      input_split = input.split()
-      for word in input_split:
-        if word.lower() in positive_words:
-          count_pos += 1
-        if word.lower() in negative_words:
-          count_neg += 1
+        count_pos = 0
+        count_neg = 0
+        input_split = input.split()
+        for word in input_split:
+            if word.lower() in positive_words:
+                count_pos += 1
+            if word.lower() in negative_words:
+                count_neg += 1
 
-      if count_pos > count_neg:
-        print "pos"
-        return 1
-      elif count_neg > count_pos:
-        print "neg"
-        return -1
-      else: 
-        print "unsure"
-        return 0
+        if count_pos > count_neg:
+            print "pos"
+            return 1
+        elif count_neg > count_pos:
+            print "neg"
+            return -1
+        else: 
+            print "unsure"
+            return 0
 
     def process(self, input):
         """Takes the input string from the REPL and call delegated functions
@@ -136,8 +136,8 @@ class Chatbot:
         else:
             movie_title = self.get_movie_title(input)
             sentiment = self.get_sentiment(input)
-            print movie_title, sentiment
             if len(movie_title) == 1:
+                movie_title = movie_title[0].replace('\"', '')
                 if sentiment == 1:
                     response = "Thanks! I\'m glad you liked \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
                     self.movie_sent.append((movie_title, sentiment))
@@ -145,7 +145,7 @@ class Chatbot:
                     response = "Uh Oh! I\'m sorry you didn\'t enjoy \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
                     self.movie_sent.append((movie_title, sentiment))
                 else:
-                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about %s." %(movie_title, movie_title)
+                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about \"%s\"." %(movie_title, movie_title)
                     #repeat process and save the movie title
             elif len(movie_title) > 1:
                 response = "You're confusing me! Please enter one movie at a time. Can you please tell me about one movie?"
