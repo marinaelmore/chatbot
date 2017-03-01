@@ -14,7 +14,7 @@ import numpy as np
 
 from movielens import ratings
 from random import randint
-from NaiveBayes import NaiveBayes
+from PorterStemmer import PorterStemmer
 
 class Chatbot:
     """Simple class to implement the chatbot for PA 6."""
@@ -28,7 +28,13 @@ class Chatbot:
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
-        self.classifier = NaiveBayes()
+        self.alphanum = re.compile('[^a-zA-Z0-9]')
+        self.positive_words = []
+        self.negative_words = []
+        
+        self.p = PorterStemmer()
+        self.read_sentiment()
+        
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -39,7 +45,7 @@ class Chatbot:
       # TODO: Write a short greeting message                                      #
       #############################################################################
 
-      greeting_message = 'How can I help you?'
+      greeting_message = 'Hello, I am Oscar! If you give me some movies to recommended. I can help you find other movies you will love.'
 
       #############################################################################
       #                             END OF YOUR CODE                              #
@@ -53,7 +59,7 @@ class Chatbot:
       # TODO: Write a short farewell message                                      #
       #############################################################################
 
-      goodbye_message = 'Have a nice day!'
+      goodbye_message = 'Thanks for chatting movies with me. Have a great day!'
 
       #############################################################################
       #                             END OF YOUR CODE                              #
@@ -71,47 +77,54 @@ class Chatbot:
       """This function will take in the input from the user and extract the movie title
       in quotation marks. Other robust extensions of this can be written in as well
       like spell checking and finding movie titles that are not listed in quotation marks"""
-
-      #quote_regex = '\"(.*)\"'
       quote_regex = '\"[^"]+\"'
       movies = re.findall(quote_regex, input)
       if movies:
         return movies
-        #if len(movies) == 1:
-        #    return movies[0]
-        #else:
-        #    return ''
       else: 
         return ''
+
+    def read_sentiment(self):
+      regex = '(\w+),(\w+)'
+      with open("data/sentiment.txt", 'r') as f:
+          content = f.readlines()
+          for line in content:
+            line = line.lower()
+            word_sentiment = re.findall(regex, line)[0]
+            word = self.p.stem(word_sentiment[0])
+            sent = word_sentiment[1].replace('\r', '')
+            if sent == 'pos':
+                self.positive_words.append(word)
+            else:
+                self.negative_words.append(word)
 
     def get_sentiment(self, input):
         """This function will take in the input and decide the sentiment of the user's
         request. In the most basic case, the function will return 1 if the user is interested 
         in the movie and a 0 if they are not. Other extensions could return a scaled values
         to reflect the intensity of their love/hatred for the movie"""
-        positive_words = []
-        negative_words = []
-        regex = '(.*),(.*)'
-        with open("data/sentiment.txt", 'r') as f:
-            content = f.readlines()
-            for line in content:
-                word_sentiment = re.findall(regex, line)[0]
-                if word_sentiment[1] == 'pos':
-                    positive_words.append(word_sentiment[0])
-                else:
-                    negative_words.append(word_sentiment[0])
 
         count_pos = 0
         count_neg = 0
+
         input_split = input.split()
-        classification = self.classifier.classifyFile(input_split)
-        
-        if classification == 'pos':
+        for w in input_split:
+          word = self.p.stem(w)
+          if word.lower() in self.positive_words:
+            count_pos += 1
+          if word.lower() in self.negative_words:
+            count_neg += 1
+
+        if count_pos > count_neg:
+          #"pos"
           return 1
-        elif classification == 'neg':
+        elif count_neg > count_pos:
+          #"neg"
           return -1
-        else:
+        else: 
+          #"unsure"
           return 0
+        
 
     def process(self, input):
         """Takes the input string from the REPL and call delegated functions
