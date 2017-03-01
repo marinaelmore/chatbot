@@ -86,26 +86,20 @@ class Chatbot:
       """This function will take in the input from the user and extract the movie title
       in quotation marks. Other robust extensions of this can be written in as well
       like spell checking and finding movie titles that are not listed in quotation marks"""
-<<<<<<< HEAD
 
-=======
->>>>>>> master
       quote_regex = '\"[^"]+\"'
       movies = re.findall(quote_regex, input)
       lower_case_titles = [x.lower() for x in self.parsed_titles]
       valid_titles = []
 
       if movies:
-<<<<<<< HEAD
         for movie in movies:
           print movie.lower()
           if movie.lower().replace("\"", "") in lower_case_titles:
             valid_titles.append(movie)
           else: return []
         return valid_titles
-=======
-        return movies
->>>>>>> master
+
       else: 
         grams = []
         input_list_split.split()
