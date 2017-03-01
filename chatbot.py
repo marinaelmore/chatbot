@@ -202,7 +202,7 @@ class Chatbot:
       """Calculates cosine similarity between two movie indices"""
       numer = np.dot(self.ratings[m1,:],self.ratings[m2,:])
       denom = np.linalg.norm(self.ratings[m1,:])*np.linalg.norm(self.ratings[m2,:])
-      if numer/denom == 0:
+      if denom == 0:
         result = 0
       else:
         result = numer/denom
