@@ -39,12 +39,7 @@ class NaiveBayes:
     self.posCounts = collections.defaultdict(lambda: 0)
     self.V = set()
     
-    #BIGRAM
-    self.posBigramCounts = collections.defaultdict(lambda: 0)
-    self.negBigramCounts = collections.defaultdict(lambda: 0)
-    self.numPosBigrams = 0.0
-    self.numNegBigrams = 0.0
-    self.bigramsV = set()
+    self.train()
   #############################################################################
 
   def classify(self, words):
@@ -144,21 +139,26 @@ class NaiveBayes:
       split.train.append(example)
     return split
 
-  def train(self, split):
+  #def train(self, split):
+  def train(self):
+    split = self.trainSplit('data/imdb1/')
+    #self.train(trainSplit)
     for example in split.train:
       words = example.words
       self.addExample(example.klass, words)
         
   def classifyFile(self, trainDir, testFile):
-    trainSplit = self.trainSplit(trainDir)
-    self.train(trainSplit)
+    #trainSplit = self.trainSplit(trainDir)
+    #self.train(trainSplit)
+    #self.train()
     return self.classify(testFile)
 
     
 def main():
   (options, args) = getopt.getopt(sys.argv[1:], 'fbm')
   classifier = NaiveBayes()
-  classifier.classifyFile(args[0], args[1])
+  final_class = classifier.classifyFile(args[0], args[1])
+  print final_class
  
 if __name__ == "__main__":
     main()
