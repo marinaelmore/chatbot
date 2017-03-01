@@ -31,7 +31,6 @@ class Chatbot:
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
-        self.classifier = NaiveBayes()
         self.temp_movie = ''
         self.temp_flag = 0
         
@@ -169,7 +168,9 @@ class Chatbot:
             response = 'processed %s in creative mode!!' % input
         else:
             movie_title = self.get_movie_title(input)
+            print movie_title
             sentiment = self.get_sentiment(input)
+            print sentiment
             if len(movie_title) == 1:
                 movie_title = movie_title[0].replace('\"', '')
                 if sentiment == 1:
@@ -182,7 +183,6 @@ class Chatbot:
                     response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about \"%s\"." %(movie_title.title(), movie_title.title())
                     #repeat process and save the movie title
             elif len(movie_title) > 1:
-                print sentiment
                 if movie_title[0].replace('\"', '') == "?" and sentiment == 1:
                   response = "Ok, so you liked \"%s\". Is that correct?" %(movie_title[1].replace('\"', ''))
                 elif movie_title[0].replace('\"', '') == "?" and sentiment == -1:
@@ -192,6 +192,7 @@ class Chatbot:
                 response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"La La Land\"."
 
             if len(self.movie_sent) >= 2:
+              print self.movie_sent
               response = "You should watch \"%s\"." % (self.recommend(self.movie_sent))
               self.movie_sent = []
 
@@ -224,7 +225,7 @@ class Chatbot:
       # Removes articles from titles, places into additional array
       for movie in self.titles:
         title = re.findall(title_regex, movie[0])[0].replace(", The", "").replace(", An", "").replace(", A", "")
-        self.parsed_titles.append(title)
+        self.parsed_titles.append(title.lower())
 
       self.binarize()
 
@@ -236,7 +237,7 @@ class Chatbot:
       user_row = [0]*self.NUM_MOVIES
 
       for title, sentiment in tuples:
-        user_row[self.parsed_titles.index(title)] = sentiment 
+        user_row[self.parsed_titles.index(title.lower())] = sentiment 
 
       return user_row
 
@@ -254,7 +255,6 @@ class Chatbot:
       """Generates a list of movies based on the input vector u using
       item-item collaborative filtering and outputs a list of movies 
       recommended by the chatbot """
-      # Code adapted from CS246 Winter 2016 assignment 2, question 1. (Jordan Wallach)
 
       rows, cols = self.ratings.shape
       maxsim_score = 0
@@ -262,12 +262,12 @@ class Chatbot:
       for i in xrange(rows):
         score = 0
         for title, rating in u:
-          score += self.similarity(i, self.parsed_titles.index(title))*rating
-        if score > maxsim_score:
+          score += self.similarity(i, self.parsed_titles.index(title.lower()))*rating
+        if score > maxsim_score and i not in [self.parsed_titles.index(title.lower()) for title, rating in u]:
           maxsim_score = score
           maxsim_index = i
 
-      return self.parsed_titles[maxsim_index]
+      return self.parsed_titles[maxsim_index].title()
 
 
     #############################################################################
