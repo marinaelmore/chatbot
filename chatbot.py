@@ -31,12 +31,10 @@ class Chatbot:
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
-<<<<<<< HEAD
         self.classifier = NaiveBayes()
         self.temp_movie = ''
         self.temp_flag = 0
-
-=======
+        
         self.alphanum = re.compile('[^a-zA-Z0-9]')
         self.positive_words = []
         self.negative_words = []
@@ -44,7 +42,6 @@ class Chatbot:
         self.p = PorterStemmer()
         self.read_sentiment()
         
->>>>>>> master
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
