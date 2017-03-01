@@ -38,7 +38,7 @@ class NaiveBayes:
     self.negCounts = collections.defaultdict(lambda: 0)
     self.posCounts = collections.defaultdict(lambda: 0)
     self.V = set()
-    
+
     self.train()
   #############################################################################
 
@@ -69,10 +69,12 @@ class NaiveBayes:
         
     P_pos = float(prior_pos)+float(pos_likelihood)
     P_neg = float(prior_neg)+float(neg_likelihood)
+    
+    if abs(P_pos - P_neg) < 0.3:
+      classified = 'unsure'
+    elif P_pos > P_neg:
+          classified = 'pos'
 
-    if P_pos > P_neg:
-        classified = 'pos'
-        
     return classified
   
 
@@ -142,15 +144,11 @@ class NaiveBayes:
   #def train(self, split):
   def train(self):
     split = self.trainSplit('data/imdb1/')
-    #self.train(trainSplit)
     for example in split.train:
       words = example.words
       self.addExample(example.klass, words)
         
-  def classifyFile(self, trainDir, testFile):
-    #trainSplit = self.trainSplit(trainDir)
-    #self.train(trainSplit)
-    #self.train()
+  def classifyFile(self, testFile):
     return self.classify(testFile)
 
     
