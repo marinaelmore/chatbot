@@ -15,6 +15,7 @@ import numpy as np
 from movielens import ratings
 from random import randint
 from PorterStemmer import PorterStemmer
+from EditModel import EditModel
 
 class Chatbot:
     """Simple class to implement the chatbot for PA 6."""
@@ -31,7 +32,6 @@ class Chatbot:
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
-        self.classifier = NaiveBayes()
         self.temp_movie = ''
         self.temp_flag = 0
         
@@ -41,7 +41,8 @@ class Chatbot:
         
         self.p = PorterStemmer()
         self.read_sentiment()
-        
+        self.SpellCheckModel = EditModel()
+
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -79,8 +80,15 @@ class Chatbot:
     # 2. Modules 2 and 3: extraction and transformation                         #
     #############################################################################
 
-    def get_ngrams(input_list, n):
+    def get_ngrams(self, input_list, n):
       return zip(*[input_list[i:] for i in range(n)])
+
+    def check_spelling(self, movies, lower_case_titles):
+      edits = self.SpellCheckModel.edits(movies[0].replace("\"", ""))
+      for edit_list in edits: 
+        for word in edit_list:
+          if word.lower() in lower_case_titles:
+            return word
 
     def get_movie_title(self, input):
       """This function will take in the input from the user and extract the movie title
@@ -96,18 +104,31 @@ class Chatbot:
         for movie in movies:
           print movie.lower()
           if movie.lower().replace("\"", "") in lower_case_titles:
-            valid_titles.append(movie)
-          else: return []
+            valid_titles.append(movie.lower())
+          else:
+            correction = self.check_spelling(movies, lower_case_titles)
+            if correction != None: 
+              valid_titles.append(correction)
         return valid_titles
 
       else: 
         grams = []
-        input_list_split.split()
+        input_list_split = input.split()
         for i in range(1, len(input_list_split) + 1):
-          cur_grams = find_ngrams(input_list, i)
+          cur_grams = self.get_ngrams(input_list_split, i)
           for gram in cur_grams:
-            grams.append(gram)
+            string_gram = ""
+            for i in range(0, len(gram)):
+              string_gram += gram[i].lower()
+              if i != (len(gram) - 1):
+                string_gram += " "
 
+            grams.append(string_gram)
+        for movie in lower_case_titles:
+          if movie in grams:
+            valid_titles.append(movie)
+            return valid_titles
+      
       return []
 
 
@@ -224,7 +245,7 @@ class Chatbot:
       # Removes articles from titles, places into additional array
       for movie in self.titles:
         title = re.findall(title_regex, movie[0])[0].replace(", The", "").replace(", An", "").replace(", A", "")
-        self.parsed_titles.append(title)
+        self.parsed_titles.append(title.lower())
 
       self.binarize()
 
@@ -236,7 +257,7 @@ class Chatbot:
       user_row = [0]*self.NUM_MOVIES
 
       for title, sentiment in tuples:
-        user_row[self.parsed_titles.index(title)] = sentiment 
+        user_row[self.parsed_titles.index(title.lower())] = sentiment 
 
       return user_row
 
@@ -262,8 +283,8 @@ class Chatbot:
       for i in xrange(rows):
         score = 0
         for title, rating in u:
-          score += self.similarity(i, self.parsed_titles.index(title))*rating
-        if score > maxsim_score:
+          score += self.similarity(i, self.parsed_titles.index(title.lower()))*rating
+        if score > maxsim_score and i not in [self.parsed_titles.index(title.lower()) for title, rating in u]:          
           maxsim_score = score
           maxsim_index = i
 
