@@ -24,7 +24,10 @@ class Chatbot:
     #############################################################################
     def __init__(self, is_turbo=False):
         self.name = 'Oscar'
+        self.NUM_USERS = 671
+        self.NUM_MOVIES = 9125
         self.is_turbo = is_turbo
+        self.parsed_titles = []
         self.read_data()
         self.getRatings = ratings() 
         self.movie_sent = []
@@ -110,19 +113,14 @@ class Chatbot:
         count_pos = 0
         count_neg = 0
         input_split = input.split()
-        classification = self.classifier.classifyFile('data/imdb1/', input_split)
+        classification = self.classifier.classifyFile(input_split)
         
         if classification == 'pos':
           return 1
-        else:
+        elif classification == 'neg':
           return -1
-
-  # def classifyFile(trainDir, testFilePath):
-  # classifier = NaiveBayes()
-  # trainSplit = classifier.trainSplit(trainDir)
-  # classifier.train(trainSplit)
-  # testFile = classifier.readFile(testFilePath)
-  # print classifier.classify(testFile)
+        else:
+          return 0
 
     def process(self, input):
         """Takes the input string from the REPL and call delegated functions
@@ -157,6 +155,10 @@ class Chatbot:
             else:
                 response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"La La Land\"."
 
+            if len(self.movie_sent) >= 2:
+              response = "You should watch \"%s\"." % (self.recommend(self.movie_sent))
+              self.movie_sent = []
+
         return response
 
 
@@ -164,40 +166,72 @@ class Chatbot:
     # 3. Movie Recommendation helper functions                                  #
     #############################################################################
 
+    def binarize(self):
+      """Modifies the ratings matrix to make all of the ratings binary"""
+      rows, cols = self.ratings.shape
+      for i in xrange(rows):
+        for j in xrange(cols):
+          k = self.ratings[i,j]
+          if k >= 3.5:
+            self.ratings[i,j] = 1
+          elif k > 0 and k < 3.5:
+            self.ratings[i,j] = -1
+
     def read_data(self):
       """Reads the ratings matrix from file"""
       # This matrix has the following shape: num_movies x num_users
       # The values stored in each row i and column j is the rating for
       # movie i by user j
       self.titles, self.ratings = ratings()
-      #self.binarize()
+      title_regex = '(.+)(?:\s)'
+
+      # Removes articles from titles, places into additional array
+      for movie in self.titles:
+        title = re.findall(title_regex, movie[0])[0].replace(", The", "").replace(", An", "").replace(", A", "")
+        self.parsed_titles.append(title)
+
+      self.binarize()
+
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
 
+    def format_user_vec(self, tuples):
+      """Generates the row in the R matrix given a list of tuples of the user's input """
+      user_row = [0]*self.NUM_MOVIES
 
-    def binarize(self):
-      """Modifies the ratings matrix to make all of the ratings binary"""
-      for x in np.nditer(self.ratings, op_flags=['readwrite']):
-        if x >= 3.5:
-          x[...] = 1
-        elif x > 0 and x < 3.5:
-          x[...] = -1
+      for title, sentiment in tuples:
+        user_row[self.parsed_titles.index(title)] = sentiment 
 
-    def distance(self, u, v):
-      """Calculates a given distance function between vectors u and v"""
-      # TODO: Implement the distance function between vectors u and v]
-      # Note: you can also think of this as computing a similarity measure
+      return user_row
 
-      pass
-
+    def similarity(self, m1, m2):
+      """Calculates cosine similarity between two movie indices"""
+      numer = np.dot(self.ratings[m1,:],self.ratings[m2,:])
+      denom = np.linalg.norm(self.ratings[m1,:])*np.linalg.norm(self.ratings[m2,:])
+      if numer/denom == 0:
+        result = 0
+      else:
+        result = numer/denom
+      return result
 
     def recommend(self, u):
       """Generates a list of movies based on the input vector u using
-      collaborative filtering"""
-      # TODO: Implement a recommendation function that takes a user vector u
-      # and outputs a list of movies recommended by the chatbot
+      item-item collaborative filtering and outputs a list of movies 
+      recommended by the chatbot """
+      # Code adapted from CS246 Winter 2016 assignment 2, question 1. (Jordan Wallach)
 
-      pass
+      rows, cols = self.ratings.shape
+      maxsim_score = 0
+      maxsim_index = 0
+      for i in xrange(rows):
+        score = 0
+        for title, rating in u:
+          score += self.similarity(i, self.parsed_titles.index(title))*rating
+        if score > maxsim_score:
+          maxsim_score = score
+          maxsim_index = i
+
+      return self.parsed_titles[maxsim_index]
 
 
     #############################################################################
