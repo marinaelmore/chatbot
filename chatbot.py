@@ -81,7 +81,8 @@ class Chatbot:
         for movie in movies:
           if movie.lower().replace("\"", "") in lower_case_titles:
             valid_titles.append(movie)
-          else: return []
+          else: 
+            return []
         return valid_titles
 
       else: 
