@@ -64,7 +64,11 @@ class Chatbot:
     # 2. Modules 2 and 3: extraction and transformation                         #
     #############################################################################
 
+<<<<<<< HEAD
     def get_ngrams(self, input_list, n):
+=======
+    def get_ngrams(input_list, n):
+>>>>>>> fe1a7b85579f23f2e193317aa467e4541638c22e
       return zip(*[input_list[i:] for i in range(n)])
 
     def get_movie_title(self, inputs):
@@ -73,20 +77,32 @@ class Chatbot:
       like spell checking and finding movie titles that are not listed in quotation marks"""
 
       quote_regex = '\"[^"]+\"'
+<<<<<<< HEAD
       movies = re.findall(quote_regex, inputs)
+=======
+      movies = re.findall(quote_regex, input)
+>>>>>>> fe1a7b85579f23f2e193317aa467e4541638c22e
       lower_case_titles = [x.lower() for x in self.parsed_titles]
       valid_titles = []
 
       if movies:
         for movie in movies:
+<<<<<<< HEAD
           if movie.lower().replace("\"", "") in lower_case_titles:
             valid_titles.append(movie)
           else: 
             return []
+=======
+          print movie.lower()
+          if movie.lower().replace("\"", "") in lower_case_titles:
+            valid_titles.append(movie)
+          else: return []
+>>>>>>> fe1a7b85579f23f2e193317aa467e4541638c22e
         return valid_titles
 
       else: 
         grams = []
+<<<<<<< HEAD
         input_list_split = inputs.split()
         for i in range(1, len(input_list_split) + 1):
             cur_grams = self.get_ngrams(input_list_split, i)
@@ -103,6 +119,13 @@ class Chatbot:
             if movie in grams:
                 valid_titles.append(movie)
                 return valid_titles
+=======
+        input_list_split.split()
+        for i in range(1, len(input_list_split) + 1):
+          cur_grams = find_ngrams(input_list, i)
+          for gram in cur_grams:
+            grams.append(gram)
+>>>>>>> fe1a7b85579f23f2e193317aa467e4541638c22e
 
       return []
 
@@ -165,7 +188,9 @@ class Chatbot:
             response = 'processed %s in creative mode!!' % input
         else:
             movie_title = self.get_movie_title(input)
+            print movie_title
             sentiment = self.get_sentiment(input)
+            print sentiment
             if len(movie_title) == 1:
                 movie_title = movie_title[0].replace('\"', '')
                 if sentiment == 1:
@@ -186,8 +211,14 @@ class Chatbot:
             else:
                 response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"Magic Mike\"."
 
+<<<<<<< HEAD
             if len(self.movie_sent) >= 3:
               response = "Based on your previous movie choices, you should watch \"%s\" \n Would you like to hear another recommendation? (Or enter :quit if you're done.)." % (self.recommend(self.movie_sent).title())
+=======
+            if len(self.movie_sent) >= 2:
+              print self.movie_sent
+              response = "You should watch \"%s\"." % (self.recommend(self.movie_sent))
+>>>>>>> fe1a7b85579f23f2e193317aa467e4541638c22e
               self.movie_sent = []
 
         return response
@@ -249,7 +280,6 @@ class Chatbot:
       """Generates a list of movies based on the input vector u using
       item-item collaborative filtering and outputs a list of movies 
       recommended by the chatbot """
-      # Code adapted from CS246 Winter 2016 assignment 2, question 1. (Jordan Wallach)
 
       rows, cols = self.ratings.shape
       maxsim_score = 0
@@ -262,7 +292,7 @@ class Chatbot:
           maxsim_score = score
           maxsim_index = i
 
-      return self.parsed_titles[maxsim_index]
+      return self.parsed_titles[maxsim_index].title()
 
 
     #############################################################################
