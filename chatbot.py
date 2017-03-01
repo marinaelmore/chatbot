@@ -165,7 +165,9 @@ class Chatbot:
             response = 'processed %s in creative mode!!' % input
         else:
             movie_title = self.get_movie_title(input)
+            print movie_title
             sentiment = self.get_sentiment(input)
+            print sentiment
             if len(movie_title) == 1:
                 movie_title = movie_title[0].replace('\"', '')
                 if sentiment == 1:
@@ -249,7 +251,6 @@ class Chatbot:
       """Generates a list of movies based on the input vector u using
       item-item collaborative filtering and outputs a list of movies 
       recommended by the chatbot """
-      # Code adapted from CS246 Winter 2016 assignment 2, question 1. (Jordan Wallach)
 
       rows, cols = self.ratings.shape
       maxsim_score = 0
@@ -262,7 +263,7 @@ class Chatbot:
           maxsim_score = score
           maxsim_index = i
 
-      return self.parsed_titles[maxsim_index]
+      return self.parsed_titles[maxsim_index].title()
 
 
     #############################################################################
