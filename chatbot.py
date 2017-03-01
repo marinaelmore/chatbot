@@ -29,6 +29,7 @@ class Chatbot:
         self.getRatings = ratings() 
         self.movie_sent = []
         self.classifier = NaiveBayes()
+
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -72,17 +73,22 @@ class Chatbot:
       in quotation marks. Other robust extensions of this can be written in as well
       like spell checking and finding movie titles that are not listed in quotation marks"""
 
-      #quote_regex = '\"(.*)\"'
       quote_regex = '\"[^"]+\"'
       movies = re.findall(quote_regex, input)
       if movies:
         return movies
+
+      self.titles, self.ratings = ratings()
+      print self.titles
+
+
+
         #if len(movies) == 1:
         #    return movies[0]
         #else:
         #    return ''
-      else: 
-        return ''
+      # else: 
+      #   return ''
 
     def get_sentiment(self, input):
         """This function will take in the input and decide the sentiment of the user's
