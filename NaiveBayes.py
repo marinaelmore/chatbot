@@ -69,8 +69,11 @@ class NaiveBayes:
         
     P_pos = float(prior_pos)+float(pos_likelihood)
     P_neg = float(prior_neg)+float(neg_likelihood)
+
+    print P_pos
+    print P_neg
     
-    if abs(P_pos - P_neg) < 0.3:
+    if abs(P_pos - P_neg) < 0.03:
       classified = 'unsure'
     elif P_pos > P_neg:
           classified = 'pos'

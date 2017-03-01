@@ -32,6 +32,8 @@ class Chatbot:
         self.getRatings = ratings() 
         self.movie_sent = []
         self.classifier = NaiveBayes()
+        self.temp_movie = ''
+        self.temp_flag = 0
 
     #############################################################################
     # 1. WARM UP REPL
@@ -70,6 +72,8 @@ class Chatbot:
     # 2. Modules 2 and 3: extraction and transformation                         #
     #############################################################################
 
+    def get_ngrams(input_list, n):
+      return zip(*[input_list[i:] for i in range(n)])
 
     def get_movie_title(self, input):
       """This function will take in the input from the user and extract the movie title
@@ -78,20 +82,26 @@ class Chatbot:
 
       quote_regex = '\"[^"]+\"'
       movies = re.findall(quote_regex, input)
+      lower_case_titles = [x.lower() for x in self.parsed_titles]
+      valid_titles = []
+
       if movies:
-        return movies
+        for movie in movies:
+          print movie.lower()
+          if movie.lower().replace("\"", "") in lower_case_titles:
+            valid_titles.append(movie)
+          else: return []
+        return valid_titles
+      else: 
+        grams = []
+        input_list_split.split()
+        for i in range(1, len(input_list_split) + 1):
+          cur_grams = find_ngrams(input_list, i)
+          for gram in cur_grams:
+            grams.append(gram)
 
-      self.titles, self.ratings = ratings()
-      print self.titles
+      return []
 
-
-
-        #if len(movies) == 1:
-        #    return movies[0]
-        #else:
-        #    return ''
-      # else: 
-      #   return ''
 
     def get_sentiment(self, input):
         """This function will take in the input and decide the sentiment of the user's
@@ -142,16 +152,21 @@ class Chatbot:
             if len(movie_title) == 1:
                 movie_title = movie_title[0].replace('\"', '')
                 if sentiment == 1:
-                    response = "Thanks! I\'m glad you liked \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    response = "Thanks! I\'m glad you liked \"%s\", please tell me about another movie you\'ve seen." %(movie_title.title())
                     self.movie_sent.append((movie_title, sentiment))
                 elif sentiment == -1:
-                    response = "Uh Oh! I\'m sorry you didn\'t enjoy \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    response = "Uh Oh! I\'m sorry you didn\'t enjoy \"%s\", please tell me about another movie you\'ve seen." %(movie_title.title())
                     self.movie_sent.append((movie_title, sentiment))
                 else:
-                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about \"%s\"." %(movie_title, movie_title)
+                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about \"%s\"." %(movie_title.title(), movie_title.title())
                     #repeat process and save the movie title
             elif len(movie_title) > 1:
-                response = "You're confusing me! Please enter one movie at a time. Can you please tell me about one movie?"
+                print sentiment
+                if movie_title[0].replace('\"', '') == "?" and sentiment == 1:
+                  response = "Ok, so you liked \"%s\". Is that correct?" %(movie_title[1].replace('\"', ''))
+                elif movie_title[0].replace('\"', '') == "?" and sentiment == -1:
+                  response = "Ok, so you did not like \"%s\". Is that correct?" %(movie_title[1].replace('\"', ''))
+                else: response = "You're confusing me! Please enter one movie at a time. Can you please tell me about one movie?"
             else:
                 response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"La La Land\"."
 
