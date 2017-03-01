@@ -104,19 +104,14 @@ class Chatbot:
         count_pos = 0
         count_neg = 0
         input_split = input.split()
-        classification = self.classifier.classifyFile('data/imdb1/', input_split)
+        classification = self.classifier.classifyFile(input_split)
         
         if classification == 'pos':
           return 1
-        else:
+        elif classification == 'neg':
           return -1
-
-  # def classifyFile(trainDir, testFilePath):
-  # classifier = NaiveBayes()
-  # trainSplit = classifier.trainSplit(trainDir)
-  # classifier.train(trainSplit)
-  # testFile = classifier.readFile(testFilePath)
-  # print classifier.classify(testFile)
+        else:
+          return 0
 
     def process(self, input):
         """Takes the input string from the REPL and call delegated functions
