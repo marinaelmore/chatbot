@@ -8,11 +8,13 @@
 ######################################################################
 import csv
 import math
+import re
 
 import numpy as np
 
 from movielens import ratings
 from random import randint
+from PorterStemmer import PorterStemmer
 
 class Chatbot:
     """Simple class to implement the chatbot for PA 6."""
@@ -21,10 +23,18 @@ class Chatbot:
     # `moviebot` is the default chatbot. Change it to your chatbot's name       #
     #############################################################################
     def __init__(self, is_turbo=False):
-      self.name = 'moviebot'
-      self.is_turbo = is_turbo
-      self.read_data()
-
+        self.name = 'Oscar'
+        self.is_turbo = is_turbo
+        self.read_data()
+        self.getRatings = ratings() 
+        self.movie_sent = []
+        self.alphanum = re.compile('[^a-zA-Z0-9]')
+        self.positive_words = []
+        self.negative_words = []
+        
+        self.p = PorterStemmer()
+        self.read_sentiment()
+        
     #############################################################################
     # 1. WARM UP REPL
     #############################################################################
@@ -35,7 +45,7 @@ class Chatbot:
       # TODO: Write a short greeting message                                      #
       #############################################################################
 
-      greeting_message = 'How can I help you?'
+      greeting_message = 'Hello, I am Oscar! If you give me some movies to recommended. I can help you find other movies you will love.'
 
       #############################################################################
       #                             END OF YOUR CODE                              #
@@ -49,7 +59,7 @@ class Chatbot:
       # TODO: Write a short farewell message                                      #
       #############################################################################
 
-      goodbye_message = 'Have a nice day!'
+      goodbye_message = 'Thanks for chatting movies with me. Have a great day!'
 
       #############################################################################
       #                             END OF YOUR CODE                              #
@@ -62,23 +72,94 @@ class Chatbot:
     # 2. Modules 2 and 3: extraction and transformation                         #
     #############################################################################
 
-    def process(self, input):
-      """Takes the input string from the REPL and call delegated functions
-      that
-        1) extract the relevant information and
-        2) transform the information into a response to the user
-      """
-      #############################################################################
-      # TODO: Implement the extraction and transformation in this method, possibly#
-      # calling other functions. Although modular code is not graded, it is       #
-      # highly recommended                                                        #
-      #############################################################################
-      if self.is_turbo == True:
-        response = 'processed %s in creative mode!!' % input
-      else:
-        response = 'processed %s in starter mode' % input
 
-      return response
+    def get_movie_title(self, input):
+      """This function will take in the input from the user and extract the movie title
+      in quotation marks. Other robust extensions of this can be written in as well
+      like spell checking and finding movie titles that are not listed in quotation marks"""
+      quote_regex = '\"[^"]+\"'
+      movies = re.findall(quote_regex, input)
+      if movies:
+        return movies
+      else: 
+        return ''
+
+    def read_sentiment(self):
+      regex = '(\w+),(\w+)'
+      with open("data/sentiment.txt", 'r') as f:
+          content = f.readlines()
+          for line in content:
+            line = line.lower()
+            word_sentiment = re.findall(regex, line)[0]
+            word = self.p.stem(word_sentiment[0])
+            sent = word_sentiment[1].replace('\r', '')
+            if sent == 'pos':
+                self.positive_words.append(word)
+            else:
+                self.negative_words.append(word)
+
+    def get_sentiment(self, input):
+        """This function will take in the input and decide the sentiment of the user's
+        request. In the most basic case, the function will return 1 if the user is interested 
+        in the movie and a 0 if they are not. Other extensions could return a scaled values
+        to reflect the intensity of their love/hatred for the movie"""
+
+        count_pos = 0
+        count_neg = 0
+
+        input_split = input.split()
+        for w in input_split:
+          word = self.p.stem(w)
+          if word.lower() in self.positive_words:
+            count_pos += 1
+          if word.lower() in self.negative_words:
+            count_neg += 1
+
+        if count_pos > count_neg:
+          #"pos"
+          return 1
+        elif count_neg > count_pos:
+          #"neg"
+          return -1
+        else: 
+          #"unsure"
+          return 0
+        
+
+    def process(self, input):
+        """Takes the input string from the REPL and call delegated functions
+        that
+          1) extract the relevant information and
+          2) transform the information into a response to the user
+        """
+        #############################################################################
+        # TODO: Implement the extraction and transformation in this method, possibly#
+        # calling other functions. Although modular code is not graded, it is       #
+        # highly recommended                                                        #
+        #############################################################################
+        response = ''
+        if self.is_turbo == True:
+            response = 'processed %s in creative mode!!' % input
+        else:
+            movie_title = self.get_movie_title(input)
+            sentiment = self.get_sentiment(input)
+            if len(movie_title) == 1:
+                movie_title = movie_title[0].replace('\"', '')
+                if sentiment == 1:
+                    response = "Thanks! I\'m glad you liked \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    self.movie_sent.append((movie_title, sentiment))
+                elif sentiment == -1:
+                    response = "Uh Oh! I\'m sorry you didn\'t enjoy \"%s\", please tell me about another movie you\'ve seen." %(movie_title)
+                    self.movie_sent.append((movie_title, sentiment))
+                else:
+                    response = "Hmmm. I\'m not sure if you liked \"%s\", please tell me more about \"%s\"." %(movie_title, movie_title)
+                    #repeat process and save the movie title
+            elif len(movie_title) > 1:
+                response = "You're confusing me! Please enter one movie at a time. Can you please tell me about one movie?"
+            else:
+                response = "I haven't heard of that movie. Are you sure that's the correct title? For example, I recently loved \"La La Land\"."
+
+        return response
 
 
     #############################################################################
@@ -91,15 +172,18 @@ class Chatbot:
       # The values stored in each row i and column j is the rating for
       # movie i by user j
       self.titles, self.ratings = ratings()
+      #self.binarize()
       reader = csv.reader(open('data/sentiment.txt', 'rb'))
       self.sentiment = dict(reader)
 
 
     def binarize(self):
       """Modifies the ratings matrix to make all of the ratings binary"""
-
-      pass
-
+      for x in np.nditer(self.ratings, op_flags=['readwrite']):
+        if x >= 3.5:
+          x[...] = 1
+        elif x > 0 and x < 3.5:
+          x[...] = -1
 
     def distance(self, u, v):
       """Calculates a given distance function between vectors u and v"""
